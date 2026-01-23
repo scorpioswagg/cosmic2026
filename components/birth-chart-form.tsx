@@ -41,21 +41,23 @@ export default function BirthChartForm() {
   const days = Array.from({ length: 31 }, (_, i) => i + 1)
   const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i)
 
-  const hours = Array.from({ length: 24 }, (_, i) => {
-    const hour = i.toString().padStart(2, "0")
-    return `${hour}:00`
-  })
+  // We no longer restrict time selection to hourly increments.
+  // Instead of generating an array of hourly times, we'll allow users to enter an exact time of birth
+  // using an HTML time input. The `birthTime` field will contain a string in the "HH:MM" format,
+  // which is parsed into hours and minutes by the zodiac library.
+  //
+  // Note: if the user does not provide a birth time, the zodiac calculation defaults to noon (12:00).
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
 
@@ -164,18 +166,15 @@ export default function BirthChartForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="birthTime">Birth Time (Optional)</Label>
-                <Select value={formData.birthTime} onValueChange={(value) => handleSelectChange("birthTime", value)}>
-                  <SelectTrigger id="birthTime">
-                    <SelectValue placeholder="Select time (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hours.map((hour) => (
-                      <SelectItem key={hour} value={hour}>
-                        {hour}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Use a native time input so users can enter their exact time of birth, including minutes. */}
+                <Input
+                  id="birthTime"
+                  name="birthTime"
+                  type="time"
+                  step="60"
+                  value={formData.birthTime}
+                  onChange={handleChange}
+                />
               </div>
 
               <div className="space-y-2">
